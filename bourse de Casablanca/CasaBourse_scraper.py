@@ -9,9 +9,9 @@ async def main():
         browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
         await page.goto("https://www.casablanca-bourse.com/fr/instruments")  
-        # await page.fill("input[placeholder='Séance']", 'janvier 1, 2023')
-        # await page.fill("input[placeholder='Date fin']", 'décembre 31, 2024')
-        await page.wait_for_timeout(500)
+        await page.fill("input[placeholder='Séance']", 'janvier 1, 2023') # change the date base on your need 
+        await page.fill("input[placeholder='Date fin']", 'décembre 31, 2024') # change the date base on your need 
+        await page.wait_for_timeout(500) 
         await page.click('button[aria-label="autocomplete"]')
         await page.wait_for_selector('ul[role="listbox"]')
         await page.click('li:has-text("ATTIJARIWAFA BANK")')
@@ -25,11 +25,8 @@ async def main():
             writer = csv.writer(file)
             writer.writerow(["Séance", "Instrument","Ticker","Ouverture","Dernier_Cours","+haut_du_jour","+bas du jour","Nombre_de_titres_échangés","Volume_des_échanges","Nombre_de_transactions","Capitalisation"])
 
-            # ——————————————— ADD THIS AFTER you see the first table ————————————————
-
-            # 1) Find how many pages of results there are:
             await page.wait_for_selector("table")
-            await page.wait_for_timeout(500)   # ← 2 s pause before pagination
+            await page.wait_for_timeout(500)   #  0.5 s pause before pagination
 
             # Find how many pages there are:
             pagination_buttons = page.locator("nav button.text-sm")
@@ -39,11 +36,11 @@ async def main():
             for current_page in range(1, total_pages + 1):
                 if current_page > 1:
                     await page.click(f'nav button:has-text("{current_page}")')
-                    await page.wait_for_timeout(500)   # ← 2 s pause after click
+                    await page.wait_for_timeout(500)   # ← 0.5 s pause after click
                     await page.wait_for_selector("table")
-                    await page.wait_for_timeout(500)   # ← 2 s pause before scraping
+                    await page.wait_for_timeout(500)   # ← 0.5 s pause before scraping
 
-                # scrape rows as before
+             
                 rows = page.locator("table tbody.whitespace-nowrap tr")
                 count = await rows.count()
                 for i in range(count):
@@ -52,8 +49,7 @@ async def main():
                     data = [await cells.nth(j).inner_text() for j in range(await cells.count())]
                     writer.writerow(data)
 
-
-    # ——————————————— END OF PAGINATION LOGIC ————————————————
+#Note: you can icrease the waiting time (wait_for_timeout) if you have a slow internet speed connection 
 
 
 asyncio.run(main())
