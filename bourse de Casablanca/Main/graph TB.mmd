@@ -1,0 +1,70 @@
+flowchart TD
+    A[Start Script] --> B[Main Entry]
+    B --> C[Run main once]
+    C --> D[Start Daily Scheduler]
+
+    %% =========================
+    %% Scheduler
+    %% =========================
+    D --> E[Scheduler Loop]
+    E -->|Daily 20:00| F[Run Scheduled Task]
+    F --> G[Execute Main Async]
+    G --> H[Scrape Finished]
+    H --> E
+
+    %% =========================
+    %% Main Async Flow
+    %% =========================
+    C --> M[Initialize Main]
+    M --> M1[Create Data Directory]
+    M1 --> M2[Launch Browser]
+    M2 --> M3[Open Setup Page]
+    M3 --> M4[Get All Companies]
+    M4 --> M5[Fill Async Queue]
+    M5 --> M6[Open Global CSV]
+    M6 --> M7[Create Workers]
+    M7 --> M8[Wait For Workers]
+    M8 --> M9[Close Browser]
+    M9 --> M10[End Main]
+
+    %% =========================
+    %% Worker Logic
+    %% =========================
+    subgraph Worker_Process [Concurrent Workers]
+        W1[Create Browser Context]
+        W1 --> W2[Block Static Resources]
+        W2 --> W3[Open Page]
+        W3 --> W4{Queue Empty}
+        W4 -->|No| W5[Get Company]
+        W5 --> W6[Read Last Local Row]
+        W6 --> W7[Retry Loop]
+
+        W7 --> W8[Load Instruments Page]
+        W8 --> W9[Select Company]
+        W9 --> W10[Apply Filters]
+        W10 --> W11[Read First Web Row]
+        W11 --> W12{Same As Local}
+
+        W12 -->|Yes| W13[Skip Company]
+        W13 --> W4
+
+        W12 -->|No| W14[Prepare CSV Files]
+        W14 --> W15[Pagination Loop]
+        W15 --> W16[Extract Rows]
+        W16 --> W17{Row Already Exists}
+        W17 -->|Yes| W18[Stop Pagination]
+        W17 -->|No| W19[Write Company CSV]
+        W19 --> W20[Write Global CSV]
+        W20 --> W15
+
+        W18 --> W21[Mark Success]
+        W21 --> W4
+
+        W7 -->|Error| W22[Wait And Retry]
+        W22 --> W7
+
+        W7 -->|Max Retries| W23[Mark Failed]
+        W23 --> W4
+
+        W4 -->|Yes| W24[Close Context]
+    end
