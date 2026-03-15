@@ -40,7 +40,7 @@ async def main():
                     await page.wait_for_selector("table")
                     await page.wait_for_timeout(500)   # ← 0.5 s pause before scraping
 
-             
+            
                 rows = page.locator("table tbody.whitespace-nowrap tr")
                 count = await rows.count()
                 for i in range(count):
