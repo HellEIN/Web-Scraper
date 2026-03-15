@@ -8,7 +8,7 @@ import time
 
 # --- CONFIGURATION ---
 CONCURRENT_WORKERS = 4 
-HEADLESS = False         
+HEADLESS = True         
 MAX_RETRIES = 10       
 # ---------------------
 
@@ -172,7 +172,7 @@ def start_daily_schedule():
     """The function that manages the timing logic."""
     
     # Define the time in 24-hour format
-    target_time = "20:00" 
+    target_time = "19:00" 
     
     # Schedule the job
     schedule.every().day.at(target_time).do(lambda: asyncio.run(run_task()))
